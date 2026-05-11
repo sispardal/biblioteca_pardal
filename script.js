@@ -1,58 +1,84 @@
-// --- 1. FUNÇÃO DE SOM ---
-function tocarSom() {
-    try {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = context.createOscillator();
-        const gainNode = context.createGain();
+/**
+ * PARDAL ENSINO BÁSICO KIDS - SCRIPT OFICIAL
+ * Funcionalidades: Som Web Audio, Dark Mode com troca de texto, Loader e Interação.
+ */
 
-        oscillator.type = 'sine'; 
-        oscillator.frequency.setValueAtTime(523.25, context.currentTime); 
-        oscillator.frequency.exponentialRampToValueAtTime(880, context.currentTime + 0.1); 
+// --- 1. CONFIGURAÇÃO DE SOM (Web Audio API) ---
+// Gera um som amigável sem precisar de arquivos externos .mp3
+function tocarSomInterativo() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
 
-        gainNode.gain.setValueAtTime(0.05, context.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.2);
+    oscillator.type = "sine"; // Som suave
+    oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Nota Dó
+    oscillator.frequency.exponentialRampToValueAtTime(
+      880,
+      audioCtx.currentTime + 0.1,
+    ); // Sobe para Lá
 
-        oscillator.connect(gainNode);
-        gainNode.connect(context.destination);
+    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.0001,
+      audioCtx.currentTime + 0.2,
+    );
 
-        oscillator.start();
-        oscillator.stop(context.currentTime + 0.2);
-    } catch (e) {
-        console.log("Áudio aguardando interação do usuário.");
-    }
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.2);
+  } catch (e) {
+    console.warn("Áudio aguardando clique do usuário para ativar.");
+  }
 }
 
-// --- 2. DARK MODE (CORRIGIDO) ---
-const darkModeBtn = document.getElementById('darkModeBtn');
-if (darkModeBtn) {
-    darkModeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        tocarSom(); // Toca o som ao alternar
-        
-        // Opcional: Trocar o ícone do botão
-        const icon = darkModeBtn.querySelector('i');
-        if (document.body.classList.contains('dark-mode')) {
-            icon.classList.replace('fa-moon', 'fa-sun');
-        } else {
-            icon.classList.replace('fa-sun', 'fa-moon');
-        }
+// --- 2. DARK MODE COM ALTERNÂNCIA DE TEXTO ---
+function configurarDarkMode() {
+  const btn = document.getElementById("darkModeBtn");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const estaNoDarkMode = document.body.classList.toggle("dark-mode");
+    tocarSomInterativo();
+
+    // Atualiza ícone e texto dinamicamente
+    if (estaNoDarkMode) {
+      btn.innerHTML = '<i class="fa-solid fa-sun"></i> Light Mode';
+    } else {
+      btn.innerHTML = '<i class="fa-solid fa-moon"></i> Dark Mode';
+    }
+  });
+}
+
+// --- 3. CONTROLE DO LOADER (TELA DE CARREGAMENTO) ---
+function configurarLoader() {
+  const loader = document.getElementById("loader");
+  if (loader) {
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        loader.style.opacity = "0";
+        setTimeout(() => (loader.style.display = "none"), 500);
+      }, 1000);
     });
+  }
 }
 
-// --- 3. LOADER ---
-window.addEventListener('load', () => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 1000);
+// --- 4. EVENTOS DE CLIQUE GLOBAIS (SONS) ---
+function configurarSonsGlobais() {
+  document.addEventListener("click", (event) => {
+    // Toca som se clicar em botões de PDF, links do menu ou botão dark mode
+    const alvo = event.target.closest(".pdf-btn, nav a, .dark-btn");
+    if (alvo) {
+      tocarSomInterativo();
     }
-});
+  });
+}
 
-// --- 4. SONS NOS BOTÕES E LINKS ---
-document.addEventListener('click', (e) => {
-    // Verifica se clicou em um botão de PDF ou link da NAV
-    if (e.target.closest('.pdf-btn') || e.target.closest('nav a')) {
-        tocarSom();
-    }
+// --- INICIALIZAÇÃO DE TODAS AS FUNÇÕES ---
+document.addEventListener("DOMContentLoaded", () => {
+  configurarDarkMode();
+  configurarLoader();
+  configurarSonsGlobais();
 });
